@@ -13,6 +13,7 @@ struct ContentView: View {
                     Text("Temperature: \(String(format: "%.0f", weather.temp.rounded()))°F")
                     Text("Feels Like: \(String(format: "%.0f", weather.feels_like.rounded()))°F")
                     Text("Humidity: \(String(format: "%.0f", weather.humidity.rounded()))%")
+                    Text("Wind: \(String(format: "%.0f", weather.wind.rounded()))mph")
                 }
                 Button(action: {
                     fetchWeather(for: location)
@@ -28,7 +29,7 @@ struct ContentView: View {
     }
 
     func fetchWeather(for location: CLLocationCoordinate2D) {
-        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(location.latitude)&longitude=\(location.longitude)&current=temperature_2m,relative_humidity_2m,apparent_temperature&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,uv_index&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&past_days=0"
+        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(location.latitude)&longitude=\(location.longitude)&current=temperature_2m,wind_speed_10m,relative_humidity_2m,apparent_temperature&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,uv_index&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&past_days=0"
 
         guard let url = URL(string: urlString) else { return }
 
@@ -38,7 +39,7 @@ struct ContentView: View {
                     DispatchQueue.main.async {
                         self.weather = Weather(temp: decodedResponse.current.temperature_2m, humidity:decodedResponse.current.relative_humidity_2m,
                                                feels_like:decodedResponse.current.apparent_temperature,uv: decodedResponse.hourly.uv_index[0],
-                                               temp_forecast:decodedResponse.hourly.temperature_2m[0])
+                                               temp_forecast:decodedResponse.hourly.temperature_2m[0],wind:decodedResponse.current.wind_speed_10m)
                     }
                     return
                 }
@@ -53,6 +54,7 @@ struct Weather {
     let feels_like: Double
     let uv: Double
     let temp_forecast: Double
+    let wind: Double
 }
 
 struct WeatherResponse: Codable {
@@ -60,6 +62,7 @@ struct WeatherResponse: Codable {
         let temperature_2m: Double
         let relative_humidity_2m: Double
         let apparent_temperature: Double
+        let wind_speed_10m: Double
     }
     struct Hourly: Codable {
         let temperature_2m: [Double]
